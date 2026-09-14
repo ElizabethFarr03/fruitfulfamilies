@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// Fruitful Families — Firestore rules
+// Paste this into Firebase console → Firestore Database → Rules → Publish.
+//
+// The idea: the group's shared page content is open to anyone who has the
+// link, but the childcare roster (which holds parents' phone numbers) can
+// only be READ by a signed-in leader.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- The shared page: calendar, votes, snacks, library, sitters ----
+    // Anyone with the link can read it and add to it. No phone numbers live
+    // here, only names people chose to attach to what they posted.
+    match /hub/state {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;          // nobody wipes the group's page
+    }
+
+    // ---- Childcare reservations ----
+    // A parent can submit one. Nobody can read the list, edit it, or delete
+    // from it unless they're signed in as a leader.
+    match /rsvps/{id} {
+      allow create: if validReservation(request.resource.data);
+      allow read:   if request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+
+  function validReservation(d) {
+    return d.keys().hasAll(['name', 'kids', 'weekId'])
+        && d.name is string && d.name.size() > 0 && d.name.size() < 120
+        && d.kids is number && d.kids > 0 && d.kids <= 6
+        && (!('phone' in d) || (d.phone is string && d.phone.size() < 40));
+  }
+}
