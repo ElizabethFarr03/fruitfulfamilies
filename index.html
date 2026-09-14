@@ -410,7 +410,7 @@
     <div class="steps">
       <div class="step"><div class="n">1</div><div><strong>Eat first, then come.</strong><p>Monday at 6:30, 1073 Camellia Ridge Drive in Pelham. We don't do dinner, just snacks, so eat before you come or bring your own. Pull into the driveway and pack it in tight, we can fit more cars than it looks. Once it's full, park on the left side of the road. Come to the front door. We start around 6:45 and nobody will make you introduce yourself in front of everybody.</p></div></div>
       <div class="step"><div class="n">2</div><div><strong>Reserve childcare first.</strong><p>Spots are capped each week so the ratio stays sane. Reserve by Sunday night.</p></div></div>
-      <div class="step"><div class="n">3</div><div><strong>Childcare here is us, not the church.</strong><p>We meet in a home and our own group cares for the kids. This isn't a Church of the Highlands program and the church doesn't run it. You'll read the details when you reserve.</p></div></div>
+      <div class="step"><div class="n">3</div><div><strong>Childcare here is us, not the church.</strong><p>We meet in a home and our own group cares for the kids. It isn't a Church of the Highlands program. You're in the same house all night and you handle drop-off and pickup yourself.</p></div></div>
       <div class="step"><div class="n">4</div><div><strong>Bring a snack when it's your turn.</strong><p>Three slots a week, sign up above. Nothing fancy, a bag of chips counts.</p></div></div>
       <div class="step"><div class="n">5</div><div><strong>Add to this page yourself.</strong><p>You don't have to ask anybody. Share a recipe or a book in the library, put a sitter on the list, claim a snack slot, vote on what we talk about. It posts with your name on it and shows up right away.</p></div></div>
       <div class="step"><div class="n">6</div><div><strong>Text Elizabeth or Cason for the rest.</strong><p>Allergies, a hard week, anything you'd rather not type into a form. Elizabeth: <a href="tel:2057897340">205-789-7340</a>. Cason: <a href="tel:2057897167">205-789-7167</a>. Any time.</p></div></div>
@@ -435,30 +435,23 @@
     <h3 id="rsvpTitle">Reserve childcare</h3>
     <div class="seatline" id="rsvpWeek" style="margin-top:8px"></div>
 
+    <div class="terms" style="margin-top:14px">
+      <p>This is not Church of the Highlands childcare. We'll do our best as leaders to provide care you can trust, and to make it a place where our kids grow in community and grow closer to Jesus.</p>
+    </div>
+
     <label for="rName">Your name</label>
     <input id="rName" type="text" autocomplete="name">
 
     <label for="rPhone">Phone</label>
-    <input id="rPhone" type="tel" autocomplete="tel" placeholder="So we can reach you during group">
+    <input id="rPhone" type="tel" autocomplete="tel">
 
     <label for="rKids">How many kids</label>
     <select id="rKids"><option>1</option><option>2</option><option>3</option><option>4</option></select>
 
-    <div class="terms">
-      <p><strong>Before you reserve.</strong></p>
-      <p>Childcare at Fruitful Families is provided by our small group, parents caring for parents. It is not a Church of the Highlands childcare program, and the church does not staff, supervise, or oversee it.</p>
-      <p>We take it seriously. We choose caretakers we know and trust, we keep our numbers small on purpose, and we never leave one adult alone with the kids.</p>
-      <p>We also want to be straightforward: by registering your child, you understand that our group, its leaders, and its volunteers aren't responsible for injury, illness, or accidents during group, and you're choosing to participate anyway.</p>
-      <p>What we ask of you: give us a number you'll answer, tell us about allergies or medical needs, keep kids home if they're sick, and pick up on time.</p>
-    </div>
-
     <div class="check">
       <input type="checkbox" id="rAgree">
-      <label for="rAgree" style="margin:0;font-weight:400">I've read this and I'm registering my child.</label>
+      <label for="rAgree" style="margin:0;font-weight:400">Got it.</label>
     </div>
-
-    <label for="rSign">Type your full name to sign</label>
-    <input id="rSign" type="text" autocomplete="off">
 
     <div class="formerr" id="rErr" role="status"></div>
     <div class="actions">
@@ -812,7 +805,7 @@ const DB = (() => {
       return { ok:true };
     },
 
-    /* the childcare roster holds phone numbers, so it sits behind a real
+    /* the roster is who's counting on a spot, so it stays behind a real
        login rather than the page passphrase */
     async leaderSignIn(email, password){
       try {
@@ -1097,17 +1090,15 @@ $('#rSubmit').addEventListener('click', async () => {
   const name = $('#rName').value.trim();
   const phone = $('#rPhone').value.trim();
   const kids = +$('#rKids').value;
-  const sign = $('#rSign').value.trim();
-  if (!name || !phone){ $('#rErr').textContent = 'We need your name and a number that reaches you.'; return; }
-  if (!$('#rAgree').checked){ $('#rErr').textContent = 'Check the box so we have it on record.'; return; }
-  if (sign.toLowerCase() !== name.toLowerCase()){ $('#rErr').textContent = 'Type your name exactly as you entered it above to sign.'; return; }
+  if (!name || !phone){ $('#rErr').textContent = 'Name and phone, then you\'re set.'; return; }
+  if (!$('#rAgree').checked){ $('#rErr').textContent = 'Check the box and you\'re set.'; return; }
 
-  const res = await DB.reserveChildcare(activeWeek, { name, phone, kids, signed: sign });
+  const res = await DB.reserveChildcare(activeWeek, { name, phone, kids });
   data = await DB.load();
   renderAll();
   closeModal('#rsvpModal');
-  toast(res.waitlisted ? "You're on the waitlist. We'll text you if a spot opens." : `Reserved. ${kids} ${kids===1?'spot':'spots'} held for you.`);
-  ['#rName','#rPhone','#rSign'].forEach(s => $(s).value = '');
+  toast(res.waitlisted ? "You're on the waitlist. We'll let you know if a spot opens." : `Reserved. ${kids} ${kids===1?'spot':'spots'} held for you.`);
+  ['#rName','#rPhone'].forEach(s => $(s).value = '');
   $('#rAgree').checked = false;
 });
 
@@ -1225,7 +1216,7 @@ async function drawLeader(){
   const weeks = upcoming.map(w => {
     const mine = all.filter(r => r.weekId === w.id);
     const rows = mine.length
-      ? mine.map(r => `<tr><td>${r.name}</td><td><a href="tel:${(r.phone||'').replace(/\D/g,'')}">${r.phone}</a></td><td>${r.kids}</td><td>${r.waitlisted ? 'Waitlist' : 'Reserved'}</td></tr>`).join('')
+      ? mine.map(r => `<tr><td>${r.name}</td><td>${r.phone ? `<a href="tel:${r.phone.replace(/\D/g,'')}">${r.phone}</a>` : '—'}</td><td>${r.kids}</td><td>${r.waitlisted ? 'Waitlist' : 'Reserved'}</td></tr>`).join('')
       : '<tr><td colspan="4" style="color:var(--ink-60)">No reservations yet this week.</td></tr>';
     return `<h4 style="margin-top:22px">${fmtLong(w.date)} — ${w.taken} of ${data.cap} kids</h4>
       <table><thead><tr><th>Parent</th><th>Phone</th><th>Kids</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
