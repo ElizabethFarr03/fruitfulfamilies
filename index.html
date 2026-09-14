@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fruitful Families</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F3EC;
+    --paper-2:#FFFFFF;
+    --pine:#22332A;
+    --pine-soft:#3D5244;
+    --sage:#7B9B80;
+    --sage-pale:#DCE6DA;
+    --honey:#E0A82E;
+    --plum:#6B4A5A;
+    --rule:#D8D4C6;
+    --ink-60:rgba(34,51,42,.62);
+    --radius:14px;
+    --wrap:min(1060px, 92vw);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
+  body{
+    margin:0;background:var(--paper);color:var(--pine);
+    font-family:Karla,system-ui,sans-serif;font-size:17px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:Fraunces,Georgia,serif;font-weight:600;line-height:1.1;margin:0}
+  a{color:var(--pine)}
+  button{font:inherit;cursor:pointer}
+  :focus-visible{outline:3px solid var(--honey);outline-offset:3px;border-radius:4px}
+  .wrap{width:var(--wrap);margin:0 auto}
+
+  /* ---------- gate ---------- */
+  #gate{position:fixed;inset:0;z-index:100;background:var(--pine);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;padding:24px}
+  #gate .box{max-width:400px;width:100%;text-align:center}
+  #gate h1{font-size:clamp(38px,9vw,56px);color:var(--paper);letter-spacing:-.02em}
+  #gate p{color:#C6D2C4;margin:14px 0 26px}
+  #gate .row{display:flex;gap:8px}
+  #gate input{flex:1;padding:13px 15px;border-radius:10px;border:1px solid #4A6353;
+    background:#1A2820;color:var(--paper);font:inherit}
+  #gate button{padding:13px 20px;border-radius:10px;border:0;background:var(--honey);color:#26200D;font-weight:700}
+  #gate .err{color:#F0B9A6;font-size:15px;min-height:22px;margin-top:12px}
+  body.locked{overflow:hidden}
+
+  /* ---------- nav ---------- */
+  nav{position:sticky;top:0;z-index:40;background:rgba(245,243,236,.94);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:58px}
+  nav .mark{font-family:Fraunces;font-weight:700;font-size:19px;margin-right:auto;white-space:nowrap}
+  nav a{font-size:15px;text-decoration:none;color:var(--ink-60);font-weight:500;white-space:nowrap}
+  nav a:hover{color:var(--pine)}
+  .navlinks{display:flex;gap:20px;overflow-x:auto;scrollbar-width:none}
+  .navlinks::-webkit-scrollbar{display:none}
+  @media (max-width:680px){ nav .mark{font-size:17px} nav .wrap{gap:14px} }
+
+  /* ---------- hero ---------- */
+  header.hero{padding:54px 0 42px}
+  .kicker{font-size:15px;color:var(--ink-60);margin:0 0 10px}
+  .hero h1{font-size:clamp(42px,8.5vw,78px);letter-spacing:-.025em;max-width:11ch}
+  .hero .sub{max-width:52ch;margin:18px 0 0;font-size:18px;color:var(--pine-soft)}
+
+  /* ---------- seat counter (the centerpiece) ---------- */
+  .nextcard{margin-top:34px;background:var(--paper-2);border:1px solid var(--rule);
+    border-radius:var(--radius);padding:26px;display:grid;gap:26px;
+    grid-template-columns:1.1fr 1fr}
+  @media (max-width:760px){ .nextcard{grid-template-columns:1fr;padding:20px} }
+  .nextcard .when{font-family:Fraunces;font-size:30px;line-height:1.15}
+  .nextcard .where{color:var(--ink-60);margin-top:6px}
+  .seats{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 14px;max-width:320px}
+  .seat{width:22px;height:22px;border-radius:6px;background:var(--sage-pale);
+    border:1px solid #C6D3C3;position:relative}
+  .seat.taken{background:var(--sage);border-color:var(--sage)}
+  .seat.taken::after{content:"";position:absolute;inset:5px;border-radius:2px;background:rgba(255,255,255,.75)}
+  .seatline{font-size:15px;color:var(--pine-soft)}
+  .seatline strong{font-weight:700}
+  .divider{border-left:1px solid var(--rule);padding-left:26px}
+  @media (max-width:760px){ .divider{border-left:0;border-top:1px solid var(--rule);padding:22px 0 0} }
+  .btn{display:inline-block;padding:13px 22px;border:0;border-radius:10px;
+    background:var(--pine);color:var(--paper);font-weight:600;text-decoration:none}
+  .btn:hover{background:var(--pine-soft)}
+  .btn.ghost{background:transparent;color:var(--pine);border:1.5px solid var(--pine)}
+  .btn.honey{background:var(--honey);color:#26200D}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+
+  /* ---------- sections ---------- */
+  section{padding:46px 0;border-top:1px solid var(--rule)}
+  section h2{font-size:clamp(28px,5vw,38px);letter-spacing:-.02em}
+  section .lede{color:var(--pine-soft);max-width:58ch;margin:10px 0 26px}
+
+  /* calendar */
+  .weeks{display:grid;gap:10px}
+  .week{background:var(--paper-2);border:1px solid var(--rule);border-radius:12px;
+    padding:16px 18px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center}
+  @media (max-width:700px){ .week{grid-template-columns:1fr;gap:10px} }
+  .week .date{font-family:Fraunces;font-size:20px;min-width:104px}
+  .week .topic{color:var(--pine-soft);font-size:16px}
+  .week .topic em{font-style:normal;color:var(--ink-60)}
+  .week .status{font-size:14px;font-weight:600;color:var(--sage);white-space:nowrap}
+  .week .status.full{color:var(--plum)}
+  /* ballot */
+  .ballot{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  @media (max-width:760px){ .ballot{grid-template-columns:1fr} }
+  .pick{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+    padding:14px 16px;border-radius:12px;border:1.5px solid var(--rule);
+    background:var(--paper-2);color:var(--pine);font-size:16px;line-height:1.35}
+  .pick:hover{border-color:var(--sage)}
+  .pick .box{flex:0 0 20px;height:20px;border-radius:6px;border:1.5px solid #BFC7BB;
+    margin-top:1px;display:grid;place-items:center;font-size:13px;color:transparent}
+  .pick[aria-pressed="true"]{border-color:var(--pine);background:#EDF1EA}
+  .pick[aria-pressed="true"] .box{background:var(--pine);border-color:var(--pine);color:var(--paper)}
+  .pick[data-maxed="true"]{opacity:.45}
+  .pick .tl{display:block;font-weight:600}
+  .pick .ts{display:block;font-size:14.5px;line-height:1.4;color:var(--ink-60);margin-top:3px}
+  .votebar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:22px 0 0}
+  .counter{font-weight:700}
+  .writein{width:100%;max-width:440px;padding:11px 14px;border-radius:10px;
+    border:1.5px solid var(--rule);background:var(--paper-2);font:inherit;margin-top:18px}
+  .results{display:grid;gap:12px;margin-top:8px}
+  .rrow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:baseline}
+  .rrow .lbl{font-size:16px}
+  .rrow .n{font-variant-numeric:tabular-nums;color:var(--ink-60);font-size:15px}
+  .track{grid-column:1/-1;height:9px;border-radius:5px;background:var(--sage-pale);overflow:hidden}
+  .fill{height:100%;background:var(--sage);border-radius:5px}
+  .rrow.lead .fill{background:var(--honey)}
+  .rrow.lead .lbl{font-weight:700}
+  .formats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+  @media (max-width:700px){ .formats{grid-template-columns:1fr} }
+
+  .week.past{opacity:.5}
+  .week.off{background:transparent;border-style:dashed;opacity:.7}
+  .week.off .topic{font-style:italic}
+  .week .status.off{color:var(--ink-60)}
+  .week .acts{display:flex;gap:8px;flex-wrap:wrap}
+  .mini{padding:8px 14px;border-radius:9px;border:1.5px solid var(--rule);
+    background:var(--paper-2);font-size:14px;font-weight:600;color:var(--pine)}
+  .mini:hover{border-color:var(--pine)}
+  .mini.primary{background:var(--pine);color:var(--paper);border-color:var(--pine)}
+
+  /* guide */
+  .guide{background:var(--pine);color:var(--paper);border-radius:var(--radius);padding:30px}
+  .guide h3{color:var(--paper);font-size:26px}
+  .guide .verse{font-family:Fraunces;font-size:20px;line-height:1.45;color:#E7EDE4;
+    border-left:3px solid var(--honey);padding-left:16px;margin:18px 0}
+  .guide ol{margin:18px 0 0;padding-left:20px;color:#DCE4D9}
+  .guide li{margin-bottom:10px}
+  .guide .note{color:#A9BCA8;font-size:15px;margin-top:20px}
+
+  /* resources */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .chip{padding:8px 15px;border-radius:999px;border:1.5px solid var(--rule);
+    background:transparent;font-size:14px;font-weight:600;color:var(--pine-soft)}
+  .chip[aria-pressed="true"]{background:var(--pine);color:var(--paper);border-color:var(--pine)}
+  #search{width:100%;max-width:340px;padding:11px 14px;border-radius:10px;
+    border:1.5px solid var(--rule);background:var(--paper-2);font:inherit;margin:14px 0 22px}
+  .res{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .card{background:var(--paper-2);border:1px solid var(--rule);border-radius:12px;padding:18px}
+  .card h4{font-size:19px;margin-bottom:6px}
+  .card p{margin:0;font-size:15px;color:var(--pine-soft)}
+  .card .meta{margin-top:12px;font-size:13px;color:var(--ink-60)}
+  .card .tag{display:inline-block;font-size:12px;font-weight:700;color:var(--plum);
+    background:#F0E7EC;padding:3px 9px;border-radius:6px;margin-bottom:10px}
+  .empty{color:var(--ink-60);padding:24px 0}
+
+  /* snack + sitters */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media (max-width:800px){ .two{grid-template-columns:1fr} }
+  .slot{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:13px 0;border-bottom:1px solid var(--rule)}
+  .slot:last-child{border-bottom:0}
+  .slot .who{font-size:15px;color:var(--ink-60)}
+  .slot .who.filled{color:var(--pine);font-weight:600}
+  .sitter{padding:14px 0;border-bottom:1px solid var(--rule)}
+  .sitter:last-child{border-bottom:0}
+  .exsitter{padding:14px;border:1.5px dashed var(--rule);border-radius:10px;
+    background:transparent;margin-bottom:6px}
+  .exsitter .nm,.exsitter .det{opacity:.65}
+  .extag{display:inline-block;font-size:11.5px;font-weight:700;color:var(--plum);
+    background:#F0E7EC;padding:2px 8px;border-radius:5px;margin-left:8px;vertical-align:middle;opacity:1}
+  .sitter .nm{font-weight:700}
+  .sitter .det{font-size:15px;color:var(--pine-soft)}
+
+  /* start here */
+  .steps{counter-reset:s;display:grid;gap:14px;max-width:62ch}
+  .step{display:grid;grid-template-columns:34px 1fr;gap:14px}
+  .step .n{width:30px;height:30px;border-radius:50%;background:var(--sage-pale);
+    display:grid;place-items:center;font-weight:700;font-size:15px;color:var(--pine)}
+  .step p{margin:3px 0 0;color:var(--pine-soft)}
+  .step strong{color:var(--pine)}
+
+  /* modal */
+  .modal{position:fixed;inset:0;z-index:80;background:rgba(34,51,42,.5);
+    display:none;align-items:center;justify-content:center;padding:18px}
+  .modal.open{display:flex}
+  .sheet{background:var(--paper);border-radius:16px;max-width:520px;width:100%;
+    max-height:90vh;overflow:auto;padding:26px}
+  .sheet h3{font-size:26px}
+  .sheet label{display:block;font-size:14px;font-weight:600;margin:16px 0 6px}
+  .sheet input[type=text],.sheet input[type=tel],.sheet input[type=number],.sheet select{
+    width:100%;padding:11px 13px;border-radius:9px;border:1.5px solid var(--rule);
+    background:var(--paper-2);font:inherit}
+  .terms{background:var(--paper-2);border:1px solid var(--rule);border-radius:12px;
+    padding:16px;margin-top:18px;font-size:15px;color:var(--pine-soft)}
+  .terms strong{color:var(--pine)}
+  .terms p{margin:0 0 10px}
+  .terms p:last-child{margin:0}
+  .check{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:15px}
+  .check input{margin-top:4px;width:18px;height:18px;accent-color:var(--pine)}
+  .sheet .actions{display:flex;gap:10px;margin-top:22px}
+  .formerr{color:#9C3B22;font-size:15px;min-height:22px;margin-top:10px}
+  .x{background:none;border:0;font-size:26px;line-height:1;color:var(--ink-60);float:right}
+
+  /* leader view */
+  table{width:100%;border-collapse:collapse;font-size:15px;margin-top:10px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--rule)}
+  th{font-size:13px;font-weight:700;color:var(--ink-60)}
+  .capbox{display:flex;gap:10px;align-items:center;margin:16px 0}
+  .capbox input{width:80px;padding:9px;border-radius:8px;border:1.5px solid var(--rule);font:inherit}
+
+  footer{padding:40px 0 60px;border-top:1px solid var(--rule);color:var(--ink-60);font-size:15px}
+  footer .fr{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+  .linkbtn{background:none;border:0;color:var(--ink-60);text-decoration:underline;font-size:15px;padding:0}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:26px;z-index:90;
+    background:var(--pine);color:var(--paper);padding:13px 20px;border-radius:10px;
+    font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body class="locked">
+
+<!-- ============ PASSPHRASE GATE ============ -->
+<div id="gate">
+  <div class="box">
+    <h1>Fruitful Families</h1>
+    <p>This page is for our group. Enter the passphrase to come in.</p>
+    <div class="row">
+      <input id="gatepass" type="password" placeholder="Passphrase" autocomplete="off" aria-label="Passphrase">
+      <button id="gatego">Enter</button>
+    </div>
+    <div class="err" id="gateerr" role="status"></div>
+  </div>
+</div>
+
+<script>
+  /* Passphrase gate. Set REQUIRE_PASS to false while you're building so you
+     don't have to type it every time. Change GATE_PASS to whatever you tell
+     the families. LEADER_PASS is only a fallback for when Firebase is off —
+     with Firebase connected, leader view uses your real email and password. */
+  window.REQUIRE_PASS = true;
+  window.GATE_PASS    = 'highlands2026';
+  window.LEADER_PASS  = 'leader2026';
+  if (!window.REQUIRE_PASS){
+    document.getElementById('gate').remove();
+    document.body.classList.remove('locked');
+  }
+</script>
+
+<nav>
+  <div class="wrap">
+    <span class="mark">Fruitful Families</span>
+    <div class="navlinks">
+      <a href="#vote">Vote on topics</a>
+      <a href="#calendar">Calendar</a>
+      <a href="#guide">This week</a>
+      <a href="#resources">Resources</a>
+      <a href="#snacks">Snacks</a>
+      <a href="#sitters">Sitters</a>
+      <a href="#start">New here</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <p class="kicker">Mondays at 6:30, the Farrs' house in Pelham</p>
+  <h1>Parents, raising kids, together.</h1>
+  <p class="sub">Snacks, a conversation worth having, and childcare so you can actually finish a sentence. Eat dinner before you come, or bring your own. Reserve your kids' spots below.</p>
+
+  <div class="nextcard">
+    <div>
+      <div class="when" id="nextWhen">—</div>
+      <div class="where" id="nextTopic">—</div>
+      <div class="where" style="font-size:15px;margin-top:12px">
+        1073 Camellia Ridge Drive, Pelham. Fill the driveway first, then park on the left side of the road.
+      </div>
+      <div class="btnrow" style="margin-top:18px">
+        <button class="btn" id="heroRsvp">Reserve childcare</button>
+        <button class="btn ghost" id="heroIcs">Add to calendar</button>
+      </div>
+    </div>
+    <div class="divider">
+      <div class="seatline">Childcare spots for this week</div>
+      <div class="seats" id="heroSeats"></div>
+      <div class="seatline" id="heroCount">—</div>
+      <div class="seatline" style="color:var(--ink-60);margin-top:10px;font-size:14px">
+        We cap it on purpose. When it's full, you're on the waitlist and we'll text if something opens.
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ TOPIC VOTE ============ -->
+<section id="vote" style="border-top:0">
+  <div class="wrap">
+    <h2>You asked for it</h2>
+    <p class="lede">We're not picking the topics, you are. Choose the three you most want a night on. Change your mind later and just vote again with the same name, it'll swap your picks. Whatever rises to the top, we'll either build around a podcast episode or bring someone in to talk and take your questions.</p>
+
+    <div id="voteForm">
+      <div class="ballot" id="ballot"></div>
+      <input id="writeIn" class="writein" type="text" placeholder="Something we missed? Add it here.">
+      <div class="votebar">
+        <span class="counter" id="voteCount">0 of 3 picked</span>
+        <input id="voterName" type="text" placeholder="Your name" aria-label="Your name"
+               style="padding:11px 14px;border-radius:10px;border:1.5px solid var(--rule);background:var(--paper-2);font:inherit;max-width:200px">
+        <button class="btn honey" id="voteSubmit">Send my picks</button>
+        <button class="linkbtn" id="showResults">Just show me what's winning</button>
+      </div>
+      <div class="formerr" id="voteErr" role="status"></div>
+    </div>
+
+    <div id="voteResults" hidden>
+      <div class="results" id="resultsList"></div>
+      <div class="votebar">
+        <span class="seatline" id="voterTotal"></span>
+        <button class="linkbtn" id="backToVote">Back to the ballot</button>
+      </div>
+      <div id="writeInList"></div>
+    </div>
+
+    <div class="formats">
+      <div class="card">
+        <h4>A podcast night</h4>
+        <p>Everybody listens to the episode on their own before Monday, in the car or on a walk. Then we spend the night talking about it instead of listening to it. Usually At Home with the Beveres or Raising Boys and Girls.</p>
+      </div>
+      <div class="card">
+        <h4>A guest night</h4>
+        <p>Someone who knows the subject comes, talks for a bit, and then it's open questions from us. Nothing to do ahead of time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CALENDAR ============ -->
+<section id="calendar">
+  <div class="wrap">
+    <h2>The semester</h2>
+    <p class="lede">Mondays, 6:30 to 8:00, September 14 through November 30. We're off for fall break and Thanksgiving week. Topics go on the calendar once we've voted and laid the weeks out together. Reserve childcare by Sunday night so our team knows who's coming.</p>
+    <div class="weeks" id="weeks"></div>
+  </div>
+</section>
+
+<!-- ============ THIS WEEK'S GUIDE ============ -->
+<section id="guide">
+  <div class="wrap">
+    <h2>This week</h2>
+    <p class="lede">Posted once the topic is set. If it's a podcast week, listen before Monday so we can spend the night talking. Come anyway if you didn't get to it.</p>
+    <div class="guide" id="guideCard"></div>
+  </div>
+</section>
+
+<!-- ============ RESOURCES ============ -->
+<section id="resources">
+  <div class="wrap">
+    <h2>What we're passing around</h2>
+    <p class="lede">Recipes, marriage stuff, money hacks, the book somebody swore by. Add yours yourself, it goes up the second you hit the button.</p>
+    <div class="filters" id="filters"></div>
+    <div class="votebar" style="margin:14px 0 22px">
+      <input id="search" type="search" placeholder="Search resources" aria-label="Search resources" style="margin:0">
+      <button class="btn honey" id="addResBtn">Share something</button>
+    </div>
+    <div class="res" id="res"></div>
+    <div class="empty" id="resEmpty" hidden>Nothing here yet in that one. Be the first to add something.</div>
+  </div>
+</section>
+
+<!-- ============ SNACKS ============ -->
+<section id="snacks">
+  <div class="wrap">
+    <div class="two">
+      <div>
+        <h2>Who's bringing what</h2>
+        <p class="lede">Snacks only, no dinner. Three slots a week so it's never the same person twice.</p>
+        <div class="card" id="snackCard"></div>
+      </div>
+      <div id="sitters">
+        <h2>Sitters worth having</h2>
+        <p class="lede">A list we build for each other. If you've got someone you trust with your own kids, put them on here. Say their age, what they're good at, and what they charge.</p>
+        <div class="card" id="sitterCard"></div>
+        <div class="votebar" style="margin-top:14px">
+          <button class="btn honey" id="addSitterBtn">Add a sitter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ START HERE ============ -->
+<section id="start">
+  <div class="wrap">
+    <h2>New to the group?</h2>
+    <p class="lede">You don't have to catch up on anything. Here's the whole deal.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div><strong>Eat first, then come.</strong><p>Monday at 6:30, 1073 Camellia Ridge Drive in Pelham. We don't do dinner, just snacks, so eat before you come or bring your own. Pull into the driveway and pack it in tight, we can fit more cars than it looks. Once it's full, park on the left side of the road. Come to the front door. We start around 6:45 and nobody will make you introduce yourself in front of everybody.</p></div></div>
+      <div class="step"><div class="n">2</div><div><strong>Reserve childcare first.</strong><p>Spots are capped each week so the ratio stays sane. Reserve by Sunday night.</p></div></div>
+      <div class="step"><div class="n">3</div><div><strong>Childcare here is us, not the church.</strong><p>We meet in a home and our own group cares for the kids. This isn't a Church of the Highlands program and the church doesn't run it. You'll read the details when you reserve.</p></div></div>
+      <div class="step"><div class="n">4</div><div><strong>Bring a snack when it's your turn.</strong><p>Three slots a week, sign up above. Nothing fancy, a bag of chips counts.</p></div></div>
+      <div class="step"><div class="n">5</div><div><strong>Add to this page yourself.</strong><p>You don't have to ask anybody. Share a recipe or a book in the library, put a sitter on the list, claim a snack slot, vote on what we talk about. It posts with your name on it and shows up right away.</p></div></div>
+      <div class="step"><div class="n">6</div><div><strong>Text Elizabeth or Cason for the rest.</strong><p>Allergies, a hard week, anything you'd rather not type into a form. Elizabeth: <a href="tel:2057897340">205-789-7340</a>. Cason: <a href="tel:2057897167">205-789-7167</a>. Any time.</p></div></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap fr">
+    <div>Fruitful Families meets at the Farrs', 1073 Camellia Ridge Drive, Pelham, AL.<br>
+      Elizabeth <a href="tel:2057897340">205-789-7340</a> &nbsp;·&nbsp; Cason <a href="tel:2057897167">205-789-7167</a></div>
+    <button class="linkbtn" id="leaderBtn">Leader view</button>
+  </div>
+</footer>
+
+<!-- ============ RSVP MODAL ============ -->
+<div class="modal" id="rsvpModal" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
+  <div class="sheet">
+    <button class="x" id="rsvpClose" aria-label="Close">&times;</button>
+    <h3 id="rsvpTitle">Reserve childcare</h3>
+    <div class="seatline" id="rsvpWeek" style="margin-top:8px"></div>
+
+    <label for="rName">Your name</label>
+    <input id="rName" type="text" autocomplete="name">
+
+    <label for="rPhone">Phone</label>
+    <input id="rPhone" type="tel" autocomplete="tel" placeholder="So we can reach you during group">
+
+    <label for="rKids">How many kids</label>
+    <select id="rKids"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+
+    <div class="terms">
+      <p><strong>Before you reserve.</strong></p>
+      <p>Childcare at Fruitful Families is provided by our small group, parents caring for parents. It is not a Church of the Highlands childcare program, and the church does not staff, supervise, or oversee it.</p>
+      <p>We take it seriously. We choose caretakers we know and trust, we keep our numbers small on purpose, and we never leave one adult alone with the kids.</p>
+      <p>We also want to be straightforward: by registering your child, you understand that our group, its leaders, and its volunteers aren't responsible for injury, illness, or accidents during group, and you're choosing to participate anyway.</p>
+      <p>What we ask of you: give us a number you'll answer, tell us about allergies or medical needs, keep kids home if they're sick, and pick up on time.</p>
+    </div>
+
+    <div class="check">
+      <input type="checkbox" id="rAgree">
+      <label for="rAgree" style="margin:0;font-weight:400">I've read this and I'm registering my child.</label>
+    </div>
+
+    <label for="rSign">Type your full name to sign</label>
+    <input id="rSign" type="text" autocomplete="off">
+
+    <div class="formerr" id="rErr" role="status"></div>
+    <div class="actions">
+      <button class="btn honey" id="rSubmit">Reserve spots</button>
+      <button class="btn ghost" id="rCancel">Never mind</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SNACK MODAL ============ -->
+<div class="modal" id="snackModal" role="dialog" aria-modal="true" aria-labelledby="snackTitle">
+  <div class="sheet">
+    <button class="x" id="snackClose" aria-label="Close">&times;</button>
+    <h3 id="snackTitle">Claim a slot</h3>
+    <div class="seatline" id="snackWhat" style="margin-top:8px"></div>
+    <label for="sName">Your name</label>
+    <input id="sName" type="text" autocomplete="name">
+    <label for="sItem">What you'll bring</label>
+    <input id="sItem" type="text" placeholder="Optional, figure it out later">
+    <div class="formerr" id="sErr" role="status"></div>
+    <div class="actions">
+      <button class="btn honey" id="sSubmit">I've got it</button>
+      <button class="btn ghost" id="sCancel">Never mind</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD RESOURCE MODAL ============ -->
+<div class="modal" id="resModal" role="dialog" aria-modal="true" aria-labelledby="resTitle">
+  <div class="sheet">
+    <button class="x" id="resClose" aria-label="Close">&times;</button>
+    <h3 id="resTitle">Share something</h3>
+    <div class="seatline" style="margin-top:8px">A recipe, a book, a podcast, a money trick. It goes up for everybody.</div>
+
+    <label for="aTitle">What is it</label>
+    <input id="aTitle" type="text" placeholder="Name of the recipe, book, episode">
+
+    <label for="aTag">Category</label>
+    <select id="aTag"></select>
+
+    <label for="aDesc">Why you're sharing it</label>
+    <input id="aDesc" type="text" placeholder="A line is plenty">
+
+    <label for="aUrl">Link, if there is one</label>
+    <input id="aUrl" type="text" placeholder="Optional">
+
+    <label for="aBy">Your name</label>
+    <input id="aBy" type="text" autocomplete="name">
+
+    <div class="formerr" id="aErr" role="status"></div>
+    <div class="actions">
+      <button class="btn honey" id="aSubmit">Add it</button>
+      <button class="btn ghost" id="aCancel">Never mind</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD SITTER MODAL ============ -->
+<div class="modal" id="sitterModal" role="dialog" aria-modal="true" aria-labelledby="sitTitle">
+  <div class="sheet">
+    <button class="x" id="sitClose" aria-label="Close">&times;</button>
+    <h3 id="sitTitle">Add a sitter</h3>
+    <div class="seatline" style="margin-top:8px">Only add someone you've actually used and would use again.</div>
+
+    <label for="sitName">Their name</label>
+    <input id="sitName" type="text">
+
+    <label for="sitAbout">What everyone should know</label>
+    <input id="sitAbout" type="text" placeholder="Age, what they're good at, what they charge, anything else">
+
+    <label for="sitBy">Your name</label>
+    <input id="sitBy" type="text" autocomplete="name">
+
+    <div class="formerr" id="sitErr" role="status"></div>
+    <div class="actions">
+      <button class="btn honey" id="sitSubmit">Add them</button>
+      <button class="btn ghost" id="sitCancel">Never mind</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LEADER MODAL ============ -->
+<div class="modal" id="leaderModal" role="dialog" aria-modal="true" aria-labelledby="leadTitle">
+  <div class="sheet" style="max-width:720px">
+    <button class="x" id="leadClose" aria-label="Close">&times;</button>
+    <h3 id="leadTitle">Leader view</h3>
+    <div id="leadGate">
+      <label for="leadEmail">Email</label>
+      <input id="leadEmail" type="text" autocomplete="username">
+      <label for="leadPass">Password</label>
+      <input id="leadPass" type="password" autocomplete="current-password">
+      <div class="formerr" id="leadErr" role="status"></div>
+      <div class="actions"><button class="btn" id="leadGo">Sign in</button></div>
+    </div>
+    <div id="leadBody" hidden>
+      <div class="capbox">
+        <label for="capInput" style="margin:0">Kid spots per week</label>
+        <input id="capInput" type="number" min="1" max="40">
+        <button class="mini" id="capSave">Save cap</button>
+      </div>
+
+      <h4 style="margin-top:20px;font-size:19px">Set this week</h4>
+      <label for="twTopic">Topic</label>
+      <input id="twTopic" type="text" placeholder="Whatever won the vote">
+      <label for="twFormat">Format</label>
+      <select id="twFormat">
+        <option value="">Choose one</option>
+        <option>Podcast night</option>
+        <option>Guest and Q&amp;A</option>
+        <option>Just us</option>
+      </select>
+      <label for="twSource">Episode or guest</label>
+      <input id="twSource" type="text" placeholder="At Home with the Beveres, ep. 64 — or a name">
+      <label for="twLink">Link</label>
+      <input id="twLink" type="text" placeholder="https://">
+      <div class="actions" style="margin-top:14px"><button class="mini primary" id="twSave">Post it to the page</button></div>
+
+      <div id="leadTables"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script type="module">
+/* =========================================================================
+   DATA LAYER
+   Everything below talks to DB and nothing else. To go live with Firestore,
+   replace the four functions inside DB with Firebase calls and the rest of
+   the page works unchanged.
+   ========================================================================= */
+const BLANK = () => ([
+  { slot:'Something salty', who:'', item:'' },
+  { slot:'Something sweet', who:'', item:'' },
+  { slot:'Drinks',          who:'', item:'' }
+]);
+
+/* =========================================================================
+   FIREBASE CONFIG — paste the block Firebase gives you between the braces.
+   Leave it empty and the page runs on temporary in-browser data instead,
+   which is fine for looking at it but nothing saves.
+   ========================================================================= */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyALepBZ5MiGCbdR4v206NBzBjdnymcW-mY",
+  authDomain: "fruitful-families-childcare.firebaseapp.com",
+  projectId: "fruitful-families-childcare",
+  storageBucket: "fruitful-families-childcare.firebasestorage.app",
+  messagingSenderId: "630649746898",
+  appId: "1:630649746898:web:891967105ad7d18d20c40b"
+};
+
+const FB_ON = Boolean(FIREBASE_CONFIG.projectId);
+
+/* The starting shape of the group's data. On the first load with Firebase
+   connected, this gets written to Firestore once and then lives there. */
+const SEED = {
+  cap: 12,
+  weeks: [
+    { id:'w1',  date:'2026-09-14', topic:'', taken:0, snacks:BLANK() },
+    { id:'w2',  date:'2026-09-21', topic:'', taken:0, snacks:BLANK() },
+    { id:'w3',  date:'2026-09-28', topic:'', taken:0, snacks:BLANK() },
+    { id:'w4',  date:'2026-10-05', topic:'', taken:0, snacks:BLANK() },
+    { id:'off1',date:'2026-10-12', topic:'No group, fall break', off:true },
+    { id:'w5',  date:'2026-10-19', topic:'', taken:0, snacks:BLANK() },
+    { id:'w6',  date:'2026-10-26', topic:'', taken:0, snacks:BLANK() },
+    { id:'w7',  date:'2026-11-02', topic:'', taken:0, snacks:BLANK() },
+    { id:'w8',  date:'2026-11-09', topic:'', taken:0, snacks:BLANK() },
+    { id:'w9',  date:'2026-11-16', topic:'', taken:0, snacks:BLANK() },
+    { id:'off2',date:'2026-11-23', topic:'No group, Thanksgiving week', off:true },
+    { id:'w10', date:'2026-11-30', topic:'', taken:0, snacks:BLANK() }
+  ],
+  topics: [
+    { id:'t1', label:'Fear, worry, and the anxious kid',
+      sub:'What\'s normal, what isn\'t, and what to do at two in the morning.' },
+    { id:'t2', label:'Screens, and who\'s setting the rules',
+      sub:'Ages, limits, filters, and the conversation that matters more than any of them.' },
+    { id:'t3', label:'Talking about sexuality before the world does',
+      sub:'Language you can use now for identity, bodies, and the questions they bring home.' },
+    { id:'t4', label:'Discipleship that fits a Tuesday',
+      sub:'Faith rhythms small enough to survive a real week with little kids.' },
+    { id:'t5', label:'Rest you actually take',
+      sub:'What Sabbath looks like when somebody still needs a nap and dinner.' },
+    { id:'t6', label:'The conversations you can\'t script',
+      sub:'Death, bodies, hard news. How much to say and when to say it.' },
+    { id:'t7', label:'In-laws, boundaries, and everybody\'s opinion',
+      sub:'Honoring your parents while still running your own house.' },
+    { id:'t8', label:'Raising kids who pray',
+      sub:'Getting past bedtime prayers to a life that actually talks to God.' },
+    { id:'t9', label:'Still friends in the thick of it',
+      sub:'Staying close to your spouse in the years when the kids take everything.' },
+    { id:'t10', label:'How to discipline well',
+      sub:'Correcting in a way that shapes the kid instead of just stopping the behavior.' }
+  ].map(t => ({ ...t, votes:0 })),
+  voters: [],
+  writeIns: [],
+  thisWeek: { topic:'', format:'', source:'', link:'' },
+  tags: ['Podcasts','Recipes','Parenting','Marriage','Money','Faith'],
+  resources: [
+    { t:'At Home with the Beveres', tag:'Podcasts', by:'Elizabeth',
+      url:'https://addisonbevere.com/at-home/',
+      d:'Addison and Juli Bevere on marriage and raising kids, from a faith angle. One of the two shows our podcast nights come from.' },
+    { t:'Raising Boys and Girls', tag:'Podcasts', by:'Elizabeth',
+      url:'https://raisingboysandgirls.com/',
+      d:'Counselors who sit with kids and parents all day, talking through what they actually see. The other show our podcast nights come from.' },
+    { t:'Habits of the Household', tag:'Faith', by:'Elizabeth',
+      url:'https://justinwhitmelearley.com',
+      d:'Justin Whitmel Earley on building faith into the ordinary parts of a day: mealtimes, bedtimes, waking up, discipline. Practical, not guilt-inducing.' }
+  ],
+  sitters: []
+};
+
+/* ---- Firebase bootstrap (only when a config is present) ---- */
+let fb = null;
+if (FB_ON){
+  const V = '12.17.1';
+  const [{ initializeApp }, fs, auth] = await Promise.all([
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`),
+    import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`)
+  ]);
+  const app = initializeApp(FIREBASE_CONFIG);
+  fb = { fs, auth, db: fs.getFirestore(app), a: auth.getAuth(app) };
+}
+
+const DB = (() => {
+
+  /* ---------- in-browser fallback ---------- */
+  if (!FB_ON){
+    let state = JSON.parse(JSON.stringify(SEED));
+    state.rsvps = [];
+    const clone = o => JSON.parse(JSON.stringify(o));
+    return {
+      live: false,
+      async load(){ return clone(state); },
+      subscribe(){},
+      async reserveChildcare(weekId, entry){
+        const w = state.weeks.find(x => x.id === weekId);
+        const waitlisted = entry.kids > (state.cap - w.taken);
+        if (!waitlisted) w.taken += entry.kids;
+        state.rsvps.push({ ...entry, weekId, waitlisted, at:new Date().toISOString() });
+        return { waitlisted };
+      },
+      async claimSnack(weekId, i, who, item){
+        const w = state.weeks.find(x => x.id === weekId);
+        if (w.snacks[i].who) return { ok:false };
+        w.snacks[i] = { ...w.snacks[i], who, item };
+        return { ok:true };
+      },
+      async castVotes(name, ids, writeIn){
+        const key = name.trim().toLowerCase();
+        const prev = state.voters.find(v => v.key === key);
+        if (prev){
+          prev.ids.forEach(id => { const t = state.topics.find(x => x.id === id); if (t && t.votes > 0) t.votes--; });
+          prev.ids = ids;
+        } else state.voters.push({ key, name:name.trim(), ids });
+        ids.forEach(id => { const t = state.topics.find(x => x.id === id); if (t) t.votes++; });
+        if (writeIn) state.writeIns.push({ text:writeIn, by:name.trim() });
+        return { ok:true, changed: !!prev };
+      },
+      async setCap(n){ state.cap = n; return true; },
+      async setThisWeek(plan){ state.thisWeek = { ...plan }; return true; },
+      async addResource(e){ state.resources.unshift({ ...e }); return { ok:true }; },
+      async addSitter(e){ state.sitters.push({ ...e }); return { ok:true }; },
+      async leaderSignIn(){ return { ok:true }; },
+      async getRsvps(){ return state.rsvps.slice(); }
+    };
+  }
+
+  /* ---------- Firestore ---------- */
+  const { doc, getDoc, setDoc, updateDoc, onSnapshot, runTransaction,
+          collection, addDoc, getDocs, query, orderBy, arrayUnion } = fb.fs;
+  const hub = doc(fb.db, 'hub', 'state');
+
+  async function ensureSeeded(){
+    const snap = await getDoc(hub);
+    if (!snap.exists()) await setDoc(hub, SEED);
+  }
+
+  return {
+    live: true,
+
+    async load(){
+      await ensureSeeded();
+      return (await getDoc(hub)).data();
+    },
+
+    /* pushes every change to every open phone, live */
+    subscribe(cb){ return onSnapshot(hub, s => { if (s.exists()) cb(s.data()); }); },
+
+    /* the cap is enforced inside a transaction so two people reserving the
+       last spot at the same moment can't both get it */
+    async reserveChildcare(weekId, entry){
+      let waitlisted = false;
+      await runTransaction(fb.db, async tx => {
+        const snap = await tx.get(hub);
+        const d = snap.data();
+        const w = d.weeks.find(x => x.id === weekId);
+        waitlisted = entry.kids > (d.cap - w.taken);
+        if (!waitlisted){
+          w.taken += entry.kids;
+          tx.update(hub, { weeks: d.weeks });
+        }
+        const ref = doc(collection(fb.db, 'rsvps'));
+        tx.set(ref, { ...entry, weekId, waitlisted, at:new Date().toISOString() });
+      });
+      return { waitlisted };
+    },
+
+    async claimSnack(weekId, i, who, item){
+      let ok = true;
+      await runTransaction(fb.db, async tx => {
+        const d = (await tx.get(hub)).data();
+        const w = d.weeks.find(x => x.id === weekId);
+        if (w.snacks[i].who){ ok = false; return; }
+        w.snacks[i] = { ...w.snacks[i], who, item };
+        tx.update(hub, { weeks: d.weeks });
+      });
+      return { ok };
+    },
+
+    async castVotes(name, ids, writeIn){
+      let changed = false;
+      await runTransaction(fb.db, async tx => {
+        const d = (await tx.get(hub)).data();
+        const key = name.trim().toLowerCase();
+        const prev = (d.voters || []).find(v => v.key === key);
+        if (prev){
+          changed = true;
+          prev.ids.forEach(id => { const t = d.topics.find(x => x.id === id); if (t && t.votes > 0) t.votes--; });
+          prev.ids = ids;
+        } else {
+          d.voters = [...(d.voters || []), { key, name:name.trim(), ids }];
+        }
+        ids.forEach(id => { const t = d.topics.find(x => x.id === id); if (t) t.votes++; });
+        if (writeIn) d.writeIns = [...(d.writeIns || []), { text:writeIn, by:name.trim() }];
+        tx.update(hub, { topics:d.topics, voters:d.voters, writeIns:d.writeIns || [] });
+      });
+      return { ok:true, changed };
+    },
+
+    async setCap(n){ await updateDoc(hub, { cap:n }); return true; },
+    async setThisWeek(plan){ await updateDoc(hub, { thisWeek:plan }); return true; },
+
+    async addResource(e){
+      const d = (await getDoc(hub)).data();
+      await updateDoc(hub, { resources: [e, ...(d.resources || [])] });
+      return { ok:true };
+    },
+    async addSitter(e){
+      await updateDoc(hub, { sitters: arrayUnion(e) });
+      return { ok:true };
+    },
+
+    /* the childcare roster holds phone numbers, so it sits behind a real
+       login rather than the page passphrase */
+    async leaderSignIn(email, password){
+      try {
+        await fb.auth.signInWithEmailAndPassword(fb.a, email, password);
+        return { ok:true };
+      } catch (err){
+        return { ok:false, msg: err.code === 'auth/invalid-credential'
+          ? 'That email and password combination didn\'t work.'
+          : 'Sign in failed. Check your connection and try again.' };
+      }
+    },
+    async getRsvps(){
+      const snap = await getDocs(query(collection(fb.db, 'rsvps'), orderBy('at')));
+      return snap.docs.map(d => d.data());
+    }
+  };
+})();
+
+/* ---------------- helpers ---------------- */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+let data, activeWeek = null, activeSnack = null;
+
+const fmtLong  = d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+const fmtShort = d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const isPast   = d => new Date(d+'T23:59:59') < new Date();
+
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+function openModal(id){ $(id).classList.add('open'); document.body.classList.add('locked'); }
+function closeModal(id){ $(id).classList.remove('open'); document.body.classList.remove('locked'); }
+
+function nextWeek(){
+  return data.weeks.find(w => !w.off && !isPast(w.date)) || [...data.weeks].reverse().find(w => !w.off);
+}
+
+/* ---------------- topic vote ---------------- */
+let picks = new Set();
+const MAX_PICKS = 3;
+
+function renderBallot(){
+  const el = $('#ballot'); el.innerHTML = '';
+  data.topics.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'pick';
+    b.setAttribute('aria-pressed', picks.has(t.id));
+    b.dataset.maxed = (!picks.has(t.id) && picks.size >= MAX_PICKS);
+    b.innerHTML = `<span class="box">&#10003;</span><span><span class="tl">${t.label}</span>${t.sub ? `<span class="ts">${t.sub}</span>` : ''}</span>`;
+    b.addEventListener('click', () => {
+      if (picks.has(t.id)) picks.delete(t.id);
+      else if (picks.size < MAX_PICKS) picks.add(t.id);
+      else { $('#voteErr').textContent = 'Three is the limit. Unpick one to swap it out.'; return; }
+      $('#voteErr').textContent = '';
+      renderBallot();
+    });
+    el.appendChild(b);
+  });
+  $('#voteCount').textContent = `${picks.size} of ${MAX_PICKS} picked`;
+}
+
+function renderResults(){
+  const ranked = [...data.topics].sort((a,b) => b.votes - a.votes);
+  const max = Math.max(1, ranked[0].votes);
+  $('#resultsList').innerHTML = ranked.map((t,i) => `
+    <div class="rrow ${i===0 && t.votes>0 ? 'lead' : ''}">
+      <div class="lbl">${t.label}</div>
+      <div class="n">${t.votes}</div>
+      <div class="track"><div class="fill" style="width:${t.votes ? (t.votes/max*100) : 0}%"></div></div>
+    </div>`).join('');
+  const n = data.voters.length;
+  $('#voterTotal').textContent = n === 0
+    ? 'Nobody has voted yet. Be the first.'
+    : `${n} ${n === 1 ? 'person has' : 'people have'} voted.`;
+  $('#writeInList').innerHTML = data.writeIns.length
+    ? `<h4 style="margin-top:26px;font-size:19px">Written in</h4>` +
+      data.writeIns.map(w => `<div class="sitter"><div class="det">${w.text} <span style="color:var(--ink-60)">— ${w.by}</span></div></div>`).join('')
+    : '';
+}
+
+function showResults(show){
+  $('#voteForm').hidden = show;
+  $('#voteResults').hidden = !show;
+  if (show) renderResults();
+}
+
+$('#voteSubmit').addEventListener('click', async () => {
+  const name = $('#voterName').value.trim();
+  if (!name){ $('#voteErr').textContent = 'Add your name so we know who wants what.'; return; }
+  if (picks.size === 0){ $('#voteErr').textContent = 'Pick at least one before you send.'; return; }
+  const r = await DB.castVotes(name, [...picks], $('#writeIn').value.trim());
+  data = await DB.load();
+  picks.clear(); $('#writeIn').value = ''; $('#voterName').value = '';
+  renderBallot(); showResults(true);
+  toast(r.changed ? 'Swapped your picks out.' : 'Got your picks, thank you.');
+});
+$('#showResults').addEventListener('click', () => showResults(true));
+$('#backToVote').addEventListener('click', () => showResults(false));
+
+/* ---------------- this week ---------------- */
+function renderGuide(){
+  const t = data.thisWeek;
+  const el = $('#guideCard');
+  if (!t.topic){
+    el.innerHTML = `
+      <h3>Not set yet</h3>
+      <p style="color:#DCE4D9;margin-top:12px">Once we've voted and laid out the weeks, this is where you'll find the topic, the episode to listen to before you come, or who's coming to talk.</p>
+      <p class="note">Vote above and check back.</p>`;
+    return;
+  }
+  el.innerHTML = `
+    <h3>${t.topic}</h3>
+    ${t.format ? `<p class="note" style="margin-top:10px">${t.format}${t.source ? ': ' + t.source : ''}</p>` : ''}
+    ${t.link ? `<p style="margin-top:16px"><a href="${t.link}" target="_blank" rel="noopener" style="color:var(--honey)">Open it before Monday</a></p>` : ''}`;
+}
+
+/* ---------------- gate ---------------- */
+function tryGate(){
+  if ($('#gatepass').value.trim().toLowerCase() === window.GATE_PASS){
+    $('#gate').remove();
+    document.body.classList.remove('locked');
+  } else {
+    $('#gateerr').textContent = "That passphrase isn't right. Text Elizabeth or Cason if you need it.";
+  }
+}
+if ($('#gate')){
+  $('#gatego').addEventListener('click', tryGate);
+  $('#gatepass').addEventListener('keydown', e => { if (e.key === 'Enter') tryGate(); });
+}
+
+/* ---------------- render ---------------- */
+function renderHero(){
+  const w = nextWeek();
+  const remaining = Math.max(0, data.cap - w.taken);
+  $('#nextWhen').textContent  = fmtLong(w.date);
+  $('#nextTopic').textContent = w.topic;
+
+  const seats = $('#heroSeats'); seats.innerHTML = '';
+  for (let i=0;i<data.cap;i++){
+    const s = document.createElement('div');
+    s.className = 'seat' + (i < w.taken ? ' taken' : '');
+    seats.appendChild(s);
+  }
+  $('#heroCount').innerHTML = remaining > 0
+    ? `<strong>${remaining} of ${data.cap}</strong> spots open`
+    : `<strong>Full.</strong> Reserve to join the waitlist.`;
+  $('#heroRsvp').textContent = remaining > 0 ? 'Reserve childcare' : 'Join the waitlist';
+}
+
+function renderWeeks(){
+  const el = $('#weeks'); el.innerHTML = '';
+  data.weeks.forEach(w => {
+    const past = isPast(w.date);
+    const row = document.createElement('div');
+
+    if (w.off){
+      row.className = 'week off';
+      row.innerHTML = `
+        <div class="date">${fmtShort(w.date)}</div>
+        <div class="topic">${w.topic}</div>
+        <div class="acts"><span class="status off">Off</span></div>`;
+      el.appendChild(row);
+      return;
+    }
+
+    const remaining = Math.max(0, data.cap - w.taken);
+    row.className = 'week' + (past ? ' past' : '');
+    row.innerHTML = `
+      <div class="date">${fmtShort(w.date)}</div>
+      <div class="topic">${w.topic || '<em>Topic from the vote</em>'}<br><em>6:30 to 8:00 at the Farrs'</em></div>
+      <div class="acts">
+        <span class="status ${remaining ? '' : 'full'}">${past ? 'Done' : (remaining ? remaining + ' spots' : 'Waitlist')}</span>
+        ${past ? '' : `<button class="mini primary" data-rsvp="${w.id}">Childcare</button>
+        <button class="mini" data-ics="${w.id}">Calendar</button>`}
+      </div>`;
+    el.appendChild(row);
+  });
+  $$('[data-rsvp]').forEach(b => b.addEventListener('click', () => openRsvp(b.dataset.rsvp)));
+  $$('[data-ics]').forEach(b => b.addEventListener('click', () => downloadIcs(b.dataset.ics)));
+}
+
+function renderResources(){
+  const f = $('#filters');
+  if (!f.children.length){
+    ['All', ...data.tags].forEach((t,i) => {
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = t;
+      b.setAttribute('aria-pressed', i === 0);
+      b.addEventListener('click', () => {
+        $$('#filters .chip').forEach(c => c.setAttribute('aria-pressed','false'));
+        b.setAttribute('aria-pressed','true');
+        drawResources();
+      });
+      f.appendChild(b);
+    });
+    $('#aTag').innerHTML = data.tags.map(t => `<option>${t}</option>`).join('');
+  }
+  drawResources();
+}
+
+function drawResources(){
+  const active = $('#filters .chip[aria-pressed="true"]')?.textContent || 'All';
+  const q = $('#search').value.trim().toLowerCase();
+  const list = data.resources.filter(r =>
+    (active === 'All' || r.tag === active) &&
+    (!q || (r.t + r.d + r.by).toLowerCase().includes(q)));
+  const el = $('#res'); el.innerHTML = '';
+  list.forEach(r => {
+    const c = document.createElement('div');
+    c.className = 'card';
+    const title = r.url
+      ? `<a href="${r.url}" target="_blank" rel="noopener">${r.t}</a>`
+      : r.t;
+    c.innerHTML = `<span class="tag">${r.tag}</span><h4>${title}</h4><p>${r.d}</p><div class="meta">Shared by ${r.by}</div>`;
+    el.appendChild(c);
+  });
+  $('#resEmpty').hidden = list.length > 0;
+}
+
+/* add a resource */
+$('#addResBtn').addEventListener('click', () => { $('#aErr').textContent=''; openModal('#resModal'); });
+$('#resClose').addEventListener('click', () => closeModal('#resModal'));
+$('#aCancel').addEventListener('click', () => closeModal('#resModal'));
+$('#aSubmit').addEventListener('click', async () => {
+  const t = $('#aTitle').value.trim(), by = $('#aBy').value.trim(), d = $('#aDesc').value.trim();
+  if (!t || !by){ $('#aErr').textContent = 'We need what it is and who it\'s from.'; return; }
+  await DB.addResource({ t, by, d: d || 'No notes, just worth a look.', tag: $('#aTag').value, url: $('#aUrl').value.trim() });
+  data = await DB.load();
+  drawResources();
+  closeModal('#resModal');
+  toast('Added, thank you.');
+  ['#aTitle','#aDesc','#aUrl','#aBy'].forEach(s => $(s).value = '');
+});
+
+function renderSnacks(){
+  const w = nextWeek();
+  const el = $('#snackCard');
+  el.innerHTML = `<div class="meta" style="margin-bottom:6px;color:var(--ink-60);font-size:14px">${fmtLong(w.date)}</div>` +
+    w.snacks.map((s,i) => `
+      <div class="slot">
+        <div>
+          <div style="font-weight:600">${s.slot}</div>
+          <div class="who ${s.who ? 'filled' : ''}">${s.who ? s.who + (s.item ? ' — ' + s.item : '') : 'Open'}</div>
+        </div>
+        ${s.who ? '' : `<button class="mini" data-snack="${i}">Claim</button>`}
+      </div>`).join('');
+  $$('[data-snack]').forEach(b => b.addEventListener('click', () => openSnack(+b.dataset.snack)));
+}
+
+function renderSitters(){
+  const example = `
+    <div class="exsitter">
+      <div class="nm">Maddie Cole <span class="extag">example</span></div>
+      <div class="det">17, CPR certified, has kept for us since last spring. Great with a baby and a toddler at the same time. $15 an hour, needs a ride home.</div>
+      <div class="det" style="color:var(--ink-60);font-size:14px;margin-top:4px">Added by Elizabeth</div>
+    </div>`;
+  const list = data.sitters.length
+    ? data.sitters.map(s => `
+        <div class="sitter">
+          <div class="nm">${s.n}</div>
+          <div class="det">${s.d}</div>
+          <div class="det" style="color:var(--ink-60);font-size:14px;margin-top:4px">Added by ${s.by}</div>
+        </div>`).join('')
+    : `<div class="det" style="color:var(--ink-60);padding:16px 0 4px">Nobody on the list yet. Add the one person you'd hand your keys to.</div>`;
+  $('#sitterCard').innerHTML = example + list;
+}
+
+function renderAll(){ renderHero(); renderWeeks(); renderResources(); renderSnacks(); renderSitters(); renderBallot(); renderGuide(); }
+
+/* ---------------- rsvp ---------------- */
+function openRsvp(weekId){
+  activeWeek = weekId || nextWeek().id;
+  const w = data.weeks.find(x => x.id === activeWeek);
+  const remaining = Math.max(0, data.cap - w.taken);
+  $('#rsvpWeek').innerHTML = `${fmtLong(w.date)} · ${remaining ? remaining + ' spots left' : 'full, you\'ll be on the waitlist'}`;
+  $('#rErr').textContent = '';
+  openModal('#rsvpModal');
+}
+
+$('#rSubmit').addEventListener('click', async () => {
+  const name = $('#rName').value.trim();
+  const phone = $('#rPhone').value.trim();
+  const kids = +$('#rKids').value;
+  const sign = $('#rSign').value.trim();
+  if (!name || !phone){ $('#rErr').textContent = 'We need your name and a number that reaches you.'; return; }
+  if (!$('#rAgree').checked){ $('#rErr').textContent = 'Check the box so we have it on record.'; return; }
+  if (sign.toLowerCase() !== name.toLowerCase()){ $('#rErr').textContent = 'Type your name exactly as you entered it above to sign.'; return; }
+
+  const res = await DB.reserveChildcare(activeWeek, { name, phone, kids, signed: sign });
+  data = await DB.load();
+  renderAll();
+  closeModal('#rsvpModal');
+  toast(res.waitlisted ? "You're on the waitlist. We'll text you if a spot opens." : `Reserved. ${kids} ${kids===1?'spot':'spots'} held for you.`);
+  ['#rName','#rPhone','#rSign'].forEach(s => $(s).value = '');
+  $('#rAgree').checked = false;
+});
+
+$('#heroRsvp').addEventListener('click', () => openRsvp(null));
+$('#rsvpClose').addEventListener('click', () => closeModal('#rsvpModal'));
+$('#rCancel').addEventListener('click', () => closeModal('#rsvpModal'));
+
+/* ---------------- snacks ---------------- */
+function openSnack(i){
+  activeSnack = i;
+  const w = nextWeek();
+  $('#snackWhat').textContent = `${w.snacks[i].slot} for ${fmtLong(w.date)}`;
+  $('#sErr').textContent = '';
+  openModal('#snackModal');
+}
+$('#sSubmit').addEventListener('click', async () => {
+  const who = $('#sName').value.trim();
+  if (!who){ $('#sErr').textContent = 'Put your name down so nobody doubles up.'; return; }
+  const r = await DB.claimSnack(nextWeek().id, activeSnack, who, $('#sItem').value.trim());
+  if (!r.ok){ $('#sErr').textContent = 'Somebody just claimed that one. Pick another.'; }
+  data = await DB.load(); renderSnacks(); closeModal('#snackModal');
+  if (r.ok) toast('Got it, thank you.');
+  $('#sName').value = ''; $('#sItem').value = '';
+});
+$('#snackClose').addEventListener('click', () => closeModal('#snackModal'));
+$('#sCancel').addEventListener('click', () => closeModal('#snackModal'));
+
+/* add a sitter */
+$('#addSitterBtn').addEventListener('click', () => { $('#sitErr').textContent=''; openModal('#sitterModal'); });
+$('#sitClose').addEventListener('click', () => closeModal('#sitterModal'));
+$('#sitCancel').addEventListener('click', () => closeModal('#sitterModal'));
+$('#sitSubmit').addEventListener('click', async () => {
+  const n = $('#sitName').value.trim(), d = $('#sitAbout').value.trim(), by = $('#sitBy').value.trim();
+  if (!n || !by){ $('#sitErr').textContent = 'We need their name and yours.'; return; }
+  await DB.addSitter({ n, d: d || 'No notes yet.', by });
+  data = await DB.load();
+  renderSitters();
+  closeModal('#sitterModal');
+  toast('Added to the list.');
+  ['#sitName','#sitAbout','#sitBy'].forEach(s => $(s).value = '');
+});
+
+/* ---------------- calendar file ---------------- */
+function downloadIcs(weekId){
+  const w = data.weeks.find(x => x.id === weekId) || nextWeek();
+  const d = w.date.replace(/-/g,'');
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Fruitful Families//EN','BEGIN:VEVENT',
+    `UID:${w.id}@fruitfulfamilies`,`DTSTART;TZID=America/Chicago:${d}T183000`,
+    `DTEND;TZID=America/Chicago:${d}T200000`,'SUMMARY:Fruitful Families',
+    `DESCRIPTION:${w.topic}\\n\\nParking: fill the driveway first\\, then park on the left side of the road.`,'LOCATION:1073 Camellia Ridge Drive\\, Pelham\\, AL','END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+  const url = URL.createObjectURL(new Blob([ics], {type:'text/calendar'}));
+  const a = document.createElement('a');
+  a.href = url; a.download = `fruitful-families-${w.date}.ics`; a.click();
+  URL.revokeObjectURL(url);
+}
+$('#heroIcs').addEventListener('click', () => downloadIcs(null));
+
+/* ---------------- leader view ---------------- */
+$('#leaderBtn').addEventListener('click', () => { $('#leadErr').textContent=''; openModal('#leaderModal'); });
+$('#leadClose').addEventListener('click', () => closeModal('#leaderModal'));
+$('#leadGo').addEventListener('click', async () => {
+  const email = $('#leadEmail').value.trim(), pw = $('#leadPass').value;
+  if (DB.live){
+    $('#leadErr').textContent = 'Signing in...';
+    const r = await DB.leaderSignIn(email, pw);
+    if (!r.ok){ $('#leadErr').textContent = r.msg; return; }
+  } else if (pw.trim().toLowerCase() !== window.LEADER_PASS){
+    $('#leadErr').textContent = 'Not the leader passphrase.'; return;
+  }
+  $('#leadErr').textContent = '';
+  $('#leadGate').hidden = true; $('#leadBody').hidden = false;
+  $('#capInput').value = data.cap;
+  drawLeader();
+});
+$('#capSave').addEventListener('click', async () => {
+  const n = Math.max(1, +$('#capInput').value || data.cap);
+  await DB.setCap(n); data = await DB.load(); renderAll(); drawLeader();
+  toast(`Cap set to ${n} spots a week.`);
+});
+
+$('#twSave').addEventListener('click', async () => {
+  await DB.setThisWeek({
+    topic:  $('#twTopic').value.trim(),
+    format: $('#twFormat').value,
+    source: $('#twSource').value.trim(),
+    link:   $('#twLink').value.trim()
+  });
+  data = await DB.load();
+  renderGuide();
+  toast($('#twTopic').value.trim() ? 'Posted to the page.' : 'Cleared.');
+});
+
+async function drawLeader(){
+  const ranked = [...data.topics].sort((a,b) => b.votes - a.votes);
+  const tally = `<h4 style="margin-top:26px;font-size:19px">Topic votes (${(data.voters||[]).length} voted)</h4>
+    <table><tbody>${ranked.map(t =>
+      `<tr><td>${t.label}</td><td style="text-align:right;width:50px">${t.votes}</td></tr>`).join('')}</tbody></table>
+    ${(data.writeIns||[]).length ? `<h4 style="margin-top:20px;font-size:19px">Write-ins</h4>
+      <table><tbody>${data.writeIns.map(w =>
+        `<tr><td>${w.text}</td><td style="text-align:right">${w.by}</td></tr>`).join('')}</tbody></table>` : ''}`;
+
+  $('#leadTables').innerHTML = tally + '<p style="color:var(--ink-60);margin-top:22px">Loading the childcare roster...</p>';
+
+  let all = [];
+  try { all = await DB.getRsvps(); }
+  catch (err){
+    $('#leadTables').innerHTML = tally +
+      '<p style="color:#9C3B22;margin-top:22px">Could not load the roster. Your account may not have permission to read reservations.</p>';
+    return;
+  }
+
+  const upcoming = data.weeks.filter(w => !w.off && !isPast(w.date));
+  const weeks = upcoming.map(w => {
+    const mine = all.filter(r => r.weekId === w.id);
+    const rows = mine.length
+      ? mine.map(r => `<tr><td>${r.name}</td><td><a href="tel:${(r.phone||'').replace(/\D/g,'')}">${r.phone}</a></td><td>${r.kids}</td><td>${r.waitlisted ? 'Waitlist' : 'Reserved'}</td></tr>`).join('')
+      : '<tr><td colspan="4" style="color:var(--ink-60)">No reservations yet this week.</td></tr>';
+    return `<h4 style="margin-top:22px">${fmtLong(w.date)} — ${w.taken} of ${data.cap} kids</h4>
+      <table><thead><tr><th>Parent</th><th>Phone</th><th>Kids</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }).join('');
+
+  $('#leadTables').innerHTML = tally + weeks;
+}
+
+/* ---------------- misc ---------------- */
+$('#search').addEventListener('input', drawResources);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') ['#rsvpModal','#snackModal','#resModal','#sitterModal','#leaderModal'].forEach(closeModal);
+});
+
+(async () => {
+  try {
+    data = await DB.load();
+    renderAll();
+    DB.subscribe(fresh => { data = fresh; renderAll(); });
+    if (!DB.live) console.info('Running on temporary in-browser data. Add your Firebase config to make it stick.');
+  } catch (err){
+    console.error(err);
+    document.querySelector('#nextWhen').textContent = 'Could not load';
+    document.querySelector('#nextTopic').textContent = 'Refresh the page, or check the Firebase config.';
+  }
+})();
+</script>
+</body>
+</html>
